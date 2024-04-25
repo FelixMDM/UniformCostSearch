@@ -1,13 +1,22 @@
 import heapq
 import copy
 
+GOAL_STATE = [
+    [1, 2, 3],
+    [8, 0, 4],
+    [7, 6, 5]
+]
+
 class Node():
+    # order is data, operation, depth, parent, cost
     def __init__(self, data, operation, depth, parent=None, cost=0):
         self.data = data
         self.parent = parent
         self.operation = operation
         self.depth = depth
         self.cost = cost
+    def __lt__(self, other):
+        return self.depth < other.depth
 
     #getter methods
 
@@ -52,6 +61,8 @@ class Node():
             print("\n")
         print("------------------------")
 
+
+# order is data, operation, depth, parent, cost
 def rightShift(node):
     matrix = node.get_data()
     row, col = findIndex(matrix, 0)
@@ -108,8 +119,40 @@ def findIndex(matrix, element):
                 return i, j
     return None
 
+def ucs(start, goal):
+    startNode = Node(start, None, 0, 0)
+    frontier = []
+    visited = []
 
+    heapq.heapify(frontier)
+    heapq.heappush(frontier, startNode)
+    while frontier:
+        currentNode = heapq.heappop(frontier)
+        currentNode.printMatrix()
 
+        if currentNode.get_data() == goal:
+            return currentNode
+        
+        rightNode = rightShift(currentNode)
+        leftNode = leftShift(currentNode)
+        upNode = upShift(currentNode)
+        downNode = downShift(currentNode)
+
+        if currentNode not in visited:
+            heapq.heappush(visited, currentNode)
+
+        # check if the node exists in the frontier already
+        if rightNode and rightNode not in visited:
+            heapq.heappush(frontier, rightNode)
+        if leftNode and leftNode not in visited:
+            heapq.heappush(frontier, leftNode)
+        if upNode and upNode not in visited:
+            heapq.heappush(frontier, upNode)
+        if downNode and downNode not in visited:
+            heapq.heappush(frontier, downNode)
+    
+    #if we make it out of the while loop then no solution exists
+    return None
 
 # ----------------------------- TESTS -------------------------------------- #
 matrix = [
@@ -118,17 +161,19 @@ matrix = [
     [7, 8, 9]
 ]
 
-testNode = Node(matrix, "root", 0)
-testNode.printMatrix()
+# testNode = Node(matrix, "root", 0)
+# testNode.printMatrix()
 
-leftTest = leftShift(testNode)
-leftTest.printMatrix()
+# leftTest = leftShift(testNode)
+# leftTest.printMatrix()
 
-rightTest = rightShift(testNode)
-rightTest.printMatrix()
+# rightTest = rightShift(testNode)
+# rightTest.printMatrix()
 
-upTest = upShift(testNode)
-upTest.printMatrix()
+# upTest = upShift(testNode)
+# upTest.printMatrix()
 
-downTest = downShift(testNode)
-downTest.printMatrix()
+# downTest = downShift(testNode)
+# downTest.printMatrix()
+
+ucs(matrix, GOAL_STATE)
