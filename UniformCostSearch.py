@@ -3,8 +3,8 @@ import copy
 
 GOAL_STATE = [
     [1, 2, 3],
-    [8, 0, 4],
-    [7, 6, 5]
+    [4, 5, 6],
+    [7, 8, 0]
 ]
 
 class Node():
@@ -66,12 +66,14 @@ class Node():
 def rightShift(node):
     matrix = node.get_data()
     row, col = findIndex(matrix, 0)
+    if matrix == GOAL_STATE:
+        print(matrix)
 
     if col > 0:
         currMatrix = copy.deepcopy(matrix)
         currMatrix[row][col] = currMatrix[row][col-1]
         currMatrix[row][col-1] = 0
-        newNode = Node(currMatrix, "right", node.get_depth() + 1, node, 0)
+        newNode = Node(currMatrix, "right", node.get_depth() + 1, node, node.get_cost() + 1)
         return newNode
     return None
 
@@ -79,36 +81,42 @@ def rightShift(node):
 def leftShift(node):
     matrix = node.get_data()
     row, col = findIndex(matrix, 0)
+    if matrix == GOAL_STATE:
+        print(matrix)
 
     if col < 2:
         currMatrix = copy.deepcopy(matrix)
         currMatrix[row][col] = currMatrix[row][col+1]
         currMatrix[row][col+1] = 0
-        newNode = Node(currMatrix, "left", node.get_depth() + 1, node, 0)
+        newNode = Node(currMatrix, "left", node.get_depth() + 1, node, node.get_cost() + 1)
         return newNode   
     return None     
 
 def upShift(node):
     matrix = node.get_data()
     row, col = findIndex(matrix, 0)
+    if matrix == GOAL_STATE:
+        print(matrix)
 
     if row < 2:
         currMatrix = copy.deepcopy(matrix)
         currMatrix[row][col] = currMatrix[row+1][col]
         currMatrix[row+1][col] = 0
-        newNode = Node(currMatrix, "up", node.get_depth() + 1, node, 0)
+        newNode = Node(currMatrix, "up", node.get_depth() + 1, node, node.get_cost() + 1)
         return newNode
     return None
 
 def downShift(node):
     matrix = node.get_data()
     row, col = findIndex(matrix, 0)
+    if matrix == GOAL_STATE:
+        print(matrix)
 
     if row > 0:
         currMatrix = copy.deepcopy(matrix)
         currMatrix[row][col] = currMatrix[row-1][col]
         currMatrix[row-1][col] = 0
-        newNode = Node(currMatrix, "down", node.get_depth() + 1, node, 0)
+        newNode = Node(currMatrix, "down", node.get_depth() + 1, node, node.get_cost() + 1)
         return newNode
     return None
 
@@ -121,16 +129,18 @@ def findIndex(matrix, element):
 
 def ucs(start, goal):
     startNode = Node(start, None, 0, 0)
+    iterations = 0
     frontier = []
     visited = []
 
     heapq.heapify(frontier)
     heapq.heappush(frontier, startNode)
     while frontier:
-        currentNode = heapq.heappop(frontier)
-        currentNode.printMatrix()
+        currentNode = copy.deepcopy(heapq.heappop(frontier))
+        print(f"CurrentNode: {currentNode.get_data()} | Iteration: {iterations}")
 
         if currentNode.get_data() == goal:
+            print(f"solved")
             return currentNode
         
         rightNode = rightShift(currentNode)
@@ -138,27 +148,32 @@ def ucs(start, goal):
         upNode = upShift(currentNode)
         downNode = downShift(currentNode)
 
-        if currentNode not in visited:
-            heapq.heappush(visited, currentNode)
+        # rightNode.printMatrix()
+        # leftNode.printMatrix()
+        # upNode.printMatrix()
+        # downNode.printMatrix()
+
+        # if currentNode not in visited:
+        heapq.heappush(visited, currentNode)
 
         # check if the node exists in the frontier already
-        if rightNode and rightNode not in visited:
+        if rightNode and rightNode.get_data() not in [node.get_data() for node in visited] :
             heapq.heappush(frontier, rightNode)
-        if leftNode and leftNode not in visited:
+        if leftNode and leftNode.get_data() not in [node.get_data() for node in visited]:
             heapq.heappush(frontier, leftNode)
-        if upNode and upNode not in visited:
+        if upNode and upNode.get_data() not in [node.get_data() for node in visited]:
             heapq.heappush(frontier, upNode)
-        if downNode and downNode not in visited:
-            heapq.heappush(frontier, downNode)
-    
+        if downNode and downNode.get_data() not in [node.get_data() for node in visited]:
+            heapq.heappush(frontier, downNode)    
     #if we make it out of the while loop then no solution exists
+        iterations += 1
     return None
 
 # ----------------------------- TESTS -------------------------------------- #
 matrix = [
-    [1, 2, 3],
-    [4, 0, 6],
-    [7, 8, 9]
+    [1, 0, 3],
+    [4, 2, 6],
+    [7, 5, 8]
 ]
 
 # testNode = Node(matrix, "root", 0)
@@ -176,4 +191,21 @@ matrix = [
 # downTest = downShift(testNode)
 # downTest.printMatrix()
 
-ucs(matrix, GOAL_STATE)
+# testNode = Node(matrix, "start", 0)
+
+# list = []
+# list.append(testNode)
+
+# otherNode = copy.deepcopy(heapq.heappop(list))
+
+# if not (any(otherNode.get_data() for node in list)):
+#     print(f"True for {matrix} and {testNode.get_data()}")
+# else:
+#    print(f"Matrix {matrix} exists within list")
+
+soln = ucs(matrix, GOAL_STATE)
+
+if soln:
+    print(f"{soln.get_data()}")
+else:
+    print(f"No Solution")
