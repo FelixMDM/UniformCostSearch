@@ -1,100 +1,105 @@
 import heapq
+import copy
 
 class Node():
-    def __init__(self, data, parent=None, cost=0):
+    def __init__(self, data, operation, depth, parent=None, cost=0):
         self.data = data
         self.parent = parent
+        self.operation = operation
+        self.depth = depth
         self.cost = cost
-        self.children = []
 
-    def expand(self):
-        self.leftMove()
-        self.rightMove()
-        self.upMove()
-        self.downMove()     
+    #getter methods
 
-    def leftMove(self):
-        for i in range(3):
-            for j in range(3):
-                if self.data[i][j] == '*' and j < 2:
-                    new_node = Node(self.data)
+    def get_data(self):
+        return self.data
+    
+    def get_depth(self):
+        return self.depth
 
-                    new_node.data[i][j] = new_node.data[i][j+1]
-                    new_node.data[i][j+1] = '*'
+    def get_cost(self):
+        return self.cost
 
-                    # print("leftMove: \n")
-                    # new_node.printMatrix()
-                    # print("---")
+    def get_parent(self):
+        return self.parent
 
-                    self.children.append(new_node)
-                    break
+    def get_operation(self):
+        return self.operation
 
-    def rightMove(self):
-        for i in range(3):
-            for j in range(3):
-                if self.data[i][j] == '*' and j > 0:
-                    new_node = Node(self.data)
+    #setter methods
 
-                    new_node.data[i][j] = new_node.data[i][j-1]
-                    new_node.data[i][j-1] = '*'
+    def set_data(self, data):
+        self.data = data
+    
+    def set_depth(self, depth):
+        self.depth = depth
 
-                    # print("rightMove: \n")
-                    # new_node.printMatrix()
-                    # print("---")
+    def set_cost(self, cost):
+        self.cost = cost
 
-                    self.children.append(new_node)
-                    break
-                
-    def upMove(self):
-        for i in range(0, 2):
-            for j in range(0, 2):
-                if self.data[i][j] == '*' and i < 2:
-                    new_node = Node(self.data)
+    def set_parent(self, parent):
+        self.parent = parent
 
-                    new_node.data[i][j] = new_node.data[i+1][j]
-                    new_node.data[i+1][j] = '*'
+    def set_operation(self, operation):
+        self.operation = operation
 
-                    # print("upMove: \n")
-                    # new_node.printMatrix()
-                    # print("---")
-
-                    self.children.append(new_node)
-                    break  
-
-    def downMove(self):
-        for row in range(3):
-            for col in range(3):
-                if self.data[row][col] == '*':
-                    new_node = Node(self.data)
-
-                    new_node.data[row][col] = new_node.data[row-1][col]
-                    new_node.data[row-1][col] = '*'
-
-                    # print("downMove: \n")
-                    # new_node.printMatrix()
-                    # print("---")
-
-                    self.children.append(new_node)
-                    break
+    #helper functions - print
 
     def printMatrix(self):
-        for i in range(3):
-            for j in range(3):
-                print(self.data[i][j], end="")
+        for i, row in enumerate(self.data):
+            for j, value in enumerate(row):
+                print(f"{value}", end="")
             print("\n")
+        print("------------------------")
 
-    def printChildren(self):
-        if not self.children:
-            print("No Children")
-            return
-        
-        for child in self.children:
-            child.printMatrix()
-            print("---")
+def rightShift(node):
+    matrix = node.get_data()
+    row, col = findIndex(matrix, 0)
 
-def rightShift(node) {
-    row, col = findIndex(node, 0)
-}
+    if col > 0:
+        currMatrix = copy.deepcopy(matrix)
+        currMatrix[row][col] = currMatrix[row][col-1]
+        currMatrix[row][col-1] = 0
+        newNode = Node(currMatrix, "right", node.get_depth() + 1, node, 0)
+        return newNode
+    return None
+
+
+def leftShift(node):
+    matrix = node.get_data()
+    row, col = findIndex(matrix, 0)
+
+    if col < 2:
+        currMatrix = copy.deepcopy(matrix)
+        currMatrix[row][col] = currMatrix[row][col+1]
+        currMatrix[row][col+1] = 0
+        newNode = Node(currMatrix, "left", node.get_depth() + 1, node, 0)
+        return newNode   
+    return None     
+
+def upShift(node):
+    matrix = node.get_data()
+    row, col = findIndex(matrix, 0)
+
+    if row < 2:
+        currMatrix = copy.deepcopy(matrix)
+        currMatrix[row][col] = currMatrix[row+1][col]
+        currMatrix[row+1][col] = 0
+        newNode = Node(currMatrix, "up", node.get_depth() + 1, node, 0)
+        return newNode
+    return None
+
+def downShift(node):
+    matrix = node.get_data()
+    row, col = findIndex(matrix, 0)
+
+    if row > 0:
+        currMatrix = copy.deepcopy(matrix)
+        currMatrix[row][col] = currMatrix[row-1][col]
+        currMatrix[row-1][col] = 0
+        newNode = Node(currMatrix, "down", node.get_depth() + 1, node, 0)
+        return newNode
+    return None
 
 def findIndex(matrix, element):
     for i, row in enumerate(matrix):
@@ -103,42 +108,27 @@ def findIndex(matrix, element):
                 return i, j
     return None
 
-# Example usage:
+
+
+
+# ----------------------------- TESTS -------------------------------------- #
 matrix = [
     [1, 2, 3],
-    [4, 5, 6],
+    [4, 0, 6],
     [7, 8, 9]
 ]
 
-element_to_find = 4
-index = find_index(matrix, element_to_find)
+testNode = Node(matrix, "root", 0)
+testNode.printMatrix()
 
-if index:
-    print(f"Element {element_to_find} found at index: {index}")
-else:
-    print(f"Element {element_to_find} not found in the matrix.")
+leftTest = leftShift(testNode)
+leftTest.printMatrix()
 
+rightTest = rightShift(testNode)
+rightTest.printMatrix()
 
-# d = Node(matrix)
+upTest = upShift(testNode)
+upTest.printMatrix()
 
-# d.printMatrix()
-
-# print("---------down--------\n")
-
-# d.downMove()
-# d.printMatrix()
-
-# print("-------up----------\n")
-
-# d.upMove()
-# d.printMatrix()
-
-# print("----------left--------\n")
-
-# d.leftMove()
-# d.printMatrix()
-
-# print("---------right----------\n")
-
-# d.rightMove()
-# d.printMatrix()
+downTest = downShift(testNode)
+downTest.printMatrix()
