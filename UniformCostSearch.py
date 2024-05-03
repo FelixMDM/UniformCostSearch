@@ -62,7 +62,7 @@ class Node():
         print("------------------------")
 
 
-# order is data, operation, depth, parent, cost
+# these functions perform the 4 operations that we can do within the 8 puzzle
 def rightShift(node):
     matrix = node.get_data()
     row, col = findIndex(matrix, 0)
@@ -120,6 +120,7 @@ def downShift(node):
         return newNode
     return None
 
+#helper function that allows us to locate the index of the empty space - used by the 4 above
 def findIndex(matrix, element):
     for i, row in enumerate(matrix):
         for j, value in enumerate(row):
@@ -128,35 +129,42 @@ def findIndex(matrix, element):
     return None
 
 def ucs(start, goal):
-    startNode = Node(start, None, 0, 0)
+    #define the starting node to consist of the starter matrix 'start,' iterations 0, define frontier & visited arrays
+    startNode = Node(start, None, 0, 0) 
     iterations = 0
     frontier = []
     visited = []
 
-    heapq.heapify(frontier)
-    heapq.heappush(frontier, startNode)
+    #heapify to ensure that the smallest cost node is always first to be processed & push 
+    heapq.heapify(frontier) 
+    heapq.heappush(frontier, startNode) 
     while frontier:
-        currentNode = copy.deepcopy(heapq.heappop(frontier))
+        #while the frontier is not empty, set currentnode to be a [deepcopy] of the top node, pop the node we copied from frontier (we are visiting it)
+        currentNode = copy.deepcopy(heapq.heappop(frontier)) 
         print(f"CurrentNode: {currentNode.get_data()} | Iteration: {iterations}")
 
+        #if this current node is the goal state, return that
         if currentNode.get_data() == goal:
             print(f"solved")
             return currentNode
         
+        #not goal state -> expand all 4 possible operations to get children [left, right, up, down], any impossible operations will return a value of None
         rightNode = rightShift(currentNode)
         leftNode = leftShift(currentNode)
         upNode = upShift(currentNode)
         downNode = downShift(currentNode)
 
-        # rightNode.printMatrix()
-        # leftNode.printMatrix()
-        # upNode.printMatrix()
-        # downNode.printMatrix()
-
-        # if currentNode not in visited:
+        # if currentNode not in visited, add it to list of visited nodes (ensure we never repeat states):
         heapq.heappush(visited, currentNode)
 
-        # check if the node exists in the frontier already
+        '''
+        remember how we established that only valid operations will generate children for us to explore?
+        here we check if any of those 4 produced a valid state AND whether we have already expanded this child state before (already exists in visited)
+
+        essentially chechking for existence and uniqueness of the currentnodes children
+
+        if the children exist AND are unique, append them to the frontier -> we will visit/expand them in time
+        '''
         if rightNode and rightNode.get_data() not in [node.get_data() for node in visited] :
             heapq.heappush(frontier, rightNode)
         if leftNode and leftNode.get_data() not in [node.get_data() for node in visited]:
@@ -165,8 +173,9 @@ def ucs(start, goal):
             heapq.heappush(frontier, upNode)
         if downNode and downNode.get_data() not in [node.get_data() for node in visited]:
             heapq.heappush(frontier, downNode)    
-    #if we make it out of the while loop then no solution exists
         iterations += 1
+
+    #if we manage to make it out of the while loop somehow that must mean we've expanded all nodes in frontier and found NO solution, therefore none exists
     return None
 
 # ----------------------------- TESTS -------------------------------------- #
@@ -175,33 +184,6 @@ matrix = [
     [4, 2, 6],
     [7, 5, 8]
 ]
-
-# testNode = Node(matrix, "root", 0)
-# testNode.printMatrix()
-
-# leftTest = leftShift(testNode)
-# leftTest.printMatrix()
-
-# rightTest = rightShift(testNode)
-# rightTest.printMatrix()
-
-# upTest = upShift(testNode)
-# upTest.printMatrix()
-
-# downTest = downShift(testNode)
-# downTest.printMatrix()
-
-# testNode = Node(matrix, "start", 0)
-
-# list = []
-# list.append(testNode)
-
-# otherNode = copy.deepcopy(heapq.heappop(list))
-
-# if not (any(otherNode.get_data() for node in list)):
-#     print(f"True for {matrix} and {testNode.get_data()}")
-# else:
-#    print(f"Matrix {matrix} exists within list")
 
 soln = ucs(matrix, GOAL_STATE)
 
