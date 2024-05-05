@@ -55,11 +55,19 @@ class Node():
     #helper functions - print
 
     def printMatrix(self):
+        # for i, row in enumerate(self.data):
+        #     for j, value in enumerate(row):
+        #         print(f"{value}", end="")
+        #     print("\n")
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
-                print(f"{value}", end="")
-            print("\n")
-        print("------------------------")
+                print(f"{value} ", end="")
+                if j < 2:
+                    print("| ", end="")
+            print()
+            if i < 2:
+                print("-" * 9)
+        print("\n")
 
 
 # these functions perform the 4 operations that we can do within the 8 puzzle
@@ -141,11 +149,14 @@ def ucs(start, goal):
     while frontier:
         #while the frontier is not empty, set currentnode to be a [deepcopy] of the top node, pop the node we copied from frontier (we are visiting it)
         currentNode = copy.deepcopy(heapq.heappop(frontier)) 
-        print(f"CurrentNode: {currentNode.get_data()} | Iteration: {iterations}")
+
+        print(f"CurrentNode: {currentNode.get_data()} | Cost: {currentNode.get_cost()} | Nodes expanded: {iterations}")
 
         #if this current node is the goal state, return that
         if currentNode.get_data() == goal:
-            print(f"solved")
+            print("\n")
+            print(f"** SOLVED **")
+            print("\n")
             return currentNode
         
         #not goal state -> expand all 4 possible operations to get children [left, right, up, down], any impossible operations will return a value of None
@@ -178,16 +189,46 @@ def ucs(start, goal):
     #if we manage to make it out of the while loop somehow that must mean we've expanded all nodes in frontier and found NO solution, therefore none exists
     return None
 
+def main():
+    print("------------------------------------------- UCS -------------------------------------------\n")
+
+    print("Enter 9 integers separated by spaces to represent the 3x3 matrix:\n")
+
+    matrix = []
+    for i in range(3):
+        a = []
+        for j in range(3):
+            a.append(int(input()))
+        matrix.append(a)
+
+    for i in range(3):
+        for j in range(3):
+            print(matrix[i][j], end = " ")
+        print()
+
+    soln = ucs(matrix, GOAL_STATE)
+
+    if soln:
+        soln.printMatrix()
+
+    else:
+        print(f"No Solution")
+
+    print("------------------------------------------- TRACE -------------------------------------------")
+
+    trace_node = copy.deepcopy(soln)
+
+    while trace_node.get_parent():
+        print(f"Move to get here: {trace_node.get_operation()}")
+        trace_node.printMatrix()
+        trace_node = trace_node.get_parent()
+
 # ----------------------------- TESTS -------------------------------------- #
-matrix = [
-    [1, 0, 3],
-    [4, 2, 6],
-    [7, 5, 8]
-]
+# matrix = [
+#     [1, 2, 3],
+#     [4, 8, 0],
+#     [7, 6, 5]
+# ]
 
-soln = ucs(matrix, GOAL_STATE)
-
-if soln:
-    print(f"{soln.get_data()}")
-else:
-    print(f"No Solution")
+if __name__ == "__main__":
+    main()
