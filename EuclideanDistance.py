@@ -62,11 +62,19 @@ class Node():
     #helper functions - print
 
     def printMatrix(self):
+        # for i, row in enumerate(self.data):
+        #     for j, value in enumerate(row):
+        #         print(f"{value}", end="")
+        #     print("\n")
         for i, row in enumerate(self.data):
             for j, value in enumerate(row):
-                print(f"{value}", end="")
-            print("\n")
-        print("------------------------")
+                print(f"{value} ", end="")
+                if j < 2:
+                    print("| ", end="")
+            print()
+            if i < 2:
+                print("-" * 9)
+        print("\n")
 
 
 # these functions perform the 4 operations that we can do within the 8 puzzle
@@ -166,7 +174,9 @@ def aStar(start, goal):
 
         #if this current node is the goal state, return that
         if currentNode.get_data() == goal:
-            print("solved")
+            print("\n")
+            print(f"** SOLVED **")
+            print("\n")
             return currentNode
 
         if currentNode.get_data() not in [node.get_data() for node in visited]:
@@ -189,16 +199,46 @@ def aStar(start, goal):
 
     return None
 
+def main():
+    print("------------------------------------------- UCS -------------------------------------------\n")
+
+    print("Enter 9 integers separated by spaces to represent the 3x3 matrix:\n")
+
+    matrix = []
+    for i in range(3):
+        a = []
+        for j in range(3):
+            a.append(int(input()))
+        matrix.append(a)
+
+    for i in range(3):
+        for j in range(3):
+            print(matrix[i][j], end = " ")
+        print()
+
+    soln = aStar(matrix, GOAL_STATE)
+
+    if soln:
+        soln.printMatrix()
+
+    else:
+        print(f"No Solution")
+
+    print("------------------------------------------- TRACE -------------------------------------------")
+
+    trace_node = copy.deepcopy(soln)
+
+    while trace_node.get_parent():
+        print(f"Move to get here: {trace_node.get_operation()}")
+        trace_node.printMatrix()
+        trace_node = trace_node.get_parent()
+
 # ----------------------------- TESTS -------------------------------------- #
-matrix = [
-    [1, 2, 3],
-    [4, 8, 0],
-    [7, 6, 5]
-]
+# matrix = [
+#     [1, 2, 3],
+#     [4, 8, 0],
+#     [7, 6, 5]
+# ]
 
-soln = aStar(matrix, GOAL_STATE)
-
-if soln:
-    print(f"{soln.get_data()}")
-else:
-    print(f"No Solution")
+if __name__ == "__main__":
+    main()
