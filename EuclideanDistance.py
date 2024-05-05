@@ -200,7 +200,7 @@ def aStar(start, goal):
     return None
 
 def main():
-    print("------------------------------------------- UCS -------------------------------------------\n")
+    print("----------------------------------------- Euclidean -----------------------------------------\n")
 
     print("Enter 9 integers separated by spaces to represent the 3x3 matrix:\n")
 
